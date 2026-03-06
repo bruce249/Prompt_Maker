@@ -1,256 +1,221 @@
-/**
- * popup.js — Chrome Extension popup logic for Prompt Maker.
- *
- * Connects to the local FastAPI backend (http://127.0.0.1:8000)
- * and provides the same generate / copy / export / score workflow
- * in a compact popup window.
- */
+(() => {
+  const API = "http://localhost:8000";
 
-const API_BASE = "http://127.0.0.1:8000";
+  // ── DOM refs ──
+  const $ = (s) => document.querySelector(s);
+  const setupScreen   = $("#setupScreen");
+  const mainScreen    = $("#mainScreen");
+  const setupToken    = $("#setupTokenInput");
+  const setupSave     = $("#setupSaveBtn");
+  const setupError    = $("#setupError");
+  const changeTokenBtn = $("#changeTokenBtn");
+  const statusDot     = $("#statusDot");
+  const inputEl       = $("#input");
+  const outputEl      = $("#output");
+  const generateBtn   = $("#generateBtn");
+  const clearBtn      = $("#clearBtn");
+  const copyBtn       = $("#copyBtn");
+  const exportBtn     = $("#exportBtn");
+  const scoreBtn      = $("#scoreBtn");
+  const scoreSection  = $("#scoreSection");
+  const scoreFill     = $("#scoreFill");
+  const scoreValue    = $("#scoreValue");
+  const templateChips = $("#templateChips");
+  const toast         = $("#toast");
 
-// ── State ─────────────────────────────────────────────────────────────
-let selectedTemplate = null;
+  let currentTemplate = null;
 
-// ── DOM refs ──────────────────────────────────────────────────────────
-const input       = document.getElementById("input");
-const output      = document.getElementById("output");
-const generateBtn = document.getElementById("generateBtn");
-const clearBtn    = document.getElementById("clearBtn");
-const copyBtn     = document.getElementById("copyBtn");
-const exportBtn   = document.getElementById("exportBtn");
-const scoreBtn    = document.getElementById("scoreBtn");
-const toastEl     = document.getElementById("toast");
-const statusDot   = document.getElementById("statusDot");
-const statusText  = document.getElementById("statusText");
-const chipsBox    = document.getElementById("templateChips");
-const scoreSection = document.getElementById("scoreSection");
-const scoreFill   = document.getElementById("scoreFill");
-const scoreValue  = document.getElementById("scoreValue");
-const settingsPanel    = document.getElementById("settingsPanel");
-const settingsToggle   = document.getElementById("settingsToggleBtn");
-const saveSettingsBtn  = document.getElementById("saveSettingsBtn");
-const tokenInput       = document.getElementById("tokenInput");
-const modelInput       = document.getElementById("modelInput");
-const tokenStatusEl    = document.getElementById("tokenStatus");
+  // ── Screen navigation ──
+  function showScreen(name) {
+    setupScreen.classList.toggle("active", name === "setup");
+    mainScreen.classList.toggle("active", name === "main");
+    changeTokenBtn.style.display = name === "main" ? "" : "none";
+  }
 
-// ── Health check ──────────────────────────────────────────────────────
-async function checkHealth() {
-  try {
-    const res = await fetch(`${API_BASE}/health`, { method: "GET" });
-    if (res.ok) {
-      statusDot.classList.add("online");
-      statusText.textContent = "online";
+  // ── Toast ──
+  function showToast(msg, isError = false) {
+    toast.textContent = msg;
+    toast.className = "toast show" + (isError ? " error" : "");
+    setTimeout(() => { toast.className = "toast"; }, 2200);
+  }
+
+  // ── Health check ──
+  async function checkHealth() {
+    try {
+      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
+      statusDot.classList.toggle("on", r.ok);
+      return r.ok;
+    } catch {
+      statusDot.classList.remove("on");
+      return false;
     }
-  } catch {
-    statusDot.classList.remove("online");
-    statusText.textContent = "offline";
   }
-}
 
-// ── Load template chips ───────────────────────────────────────────────
-async function loadTemplates() {
-  try {
-    const res = await fetch(`${API_BASE}/templates`);
-    const data = await res.json();
-    for (const [key, desc] of Object.entries(data.templates)) {
-      const chip = document.createElement("button");
-      chip.className = "chip";
-      chip.textContent = key.replace("_", " ");
-      chip.title = desc;
-      chip.addEventListener("click", () => toggleTemplate(chip, key));
-      chipsBox.appendChild(chip);
+  // ── Init: decide which screen to show ──
+  async function init() {
+    const alive = await checkHealth();
+    if (!alive) {
+      showScreen("setup");
+      setupError.textContent = "Backend not reachable — start the server first.";
+      return;
     }
-  } catch { /* server may be down — chips just won't show */ }
-}
-
-function toggleTemplate(chip, key) {
-  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-  if (selectedTemplate === key) {
-    selectedTemplate = null;
-  } else {
-    selectedTemplate = key;
-    chip.classList.add("active");
-  }
-}
-
-// ── Generate ──────────────────────────────────────────────────────────
-async function generate() {
-  const text = input.value.trim();
-  if (!text) { showToast("Enter a prompt first.", true); return; }
-
-  generateBtn.disabled = true;
-  generateBtn.innerHTML = '<span class="spinner"></span>Working…';
-  scoreSection.classList.remove("visible");
-
-  try {
-    const body = { prompt: text };
-    if (selectedTemplate) body.template = selectedTemplate;
-
-    const res = await fetch(`${API_BASE}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || `Server error ${res.status}`);
+    try {
+      const r = await fetch(`${API}/settings`);
+      const data = await r.json();
+      // If a token is configured on the backend, go straight to main screen
+      if (data.hf_api_token_set) {
+        showScreen("main");
+        loadTemplates();
+      } else {
+        showScreen("setup");
+      }
+    } catch {
+      showScreen("setup");
     }
-
-    const data = await res.json();
-    output.value = data.structured_prompt;
-    showToast("Prompt generated!");
-  } catch (e) {
-    showToast(e.message, true);
-  } finally {
-    generateBtn.disabled = false;
-    generateBtn.textContent = "Generate";
   }
-}
 
-// ── Copy ──────────────────────────────────────────────────────────────
-async function copyOutput() {
-  const text = output.value;
-  if (!text) { showToast("Nothing to copy.", true); return; }
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast("Copied!");
-  } catch {
-    // Fallback for older browsers
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    showToast("Copied!");
-  }
-}
+  // ── Save token ──
+  async function saveToken() {
+    const token = setupToken.value.trim();
+    if (!token) { setupError.textContent = "Please paste your HuggingFace token."; return; }
+    if (!token.startsWith("hf_")) { setupError.textContent = "Token should start with hf_"; return; }
 
-// ── Export ─────────────────────────────────────────────────────────────
-function exportPrompt() {
-  const text = output.value;
-  if (!text) { showToast("Nothing to export.", true); return; }
-  const blob = new Blob([text], { type: "text/plain" });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href     = url;
-  a.download = "optimized_prompt.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast("Exported!");
-}
+    setupError.textContent = "";
+    setupSave.disabled = true;
+    setupSave.innerHTML = '<span class="spinner"></span>Connecting…';
 
-// ── Score ─────────────────────────────────────────────────────────────
-async function scoreOutput() {
-  const text = output.value;
-  if (!text) { showToast("Generate a prompt first.", true); return; }
-
-  try {
-    const res = await fetch(`${API_BASE}/score`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: text }),
-    });
-    const data = await res.json();
-    const score = data.score;
-
-    scoreValue.textContent = score;
-    scoreFill.style.width = score + "%";
-
-    if (score >= 70)      scoreFill.style.background = "var(--green)";
-    else if (score >= 40) scoreFill.style.background = "#eab308";
-    else                  scoreFill.style.background = "var(--red)";
-
-    scoreSection.classList.add("visible");
-  } catch {
-    showToast("Scoring failed.", true);
-  }
-}
-
-// ── Clear ─────────────────────────────────────────────────────────────
-function clearAll() {
-  input.value  = "";
-  output.value = "";
-  scoreSection.classList.remove("visible");
-  selectedTemplate = null;
-  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-}
-
-// ── Toast helper ──────────────────────────────────────────────────────
-function showToast(msg, isError = false) {
-  toastEl.textContent = msg;
-  toastEl.className = "toast show" + (isError ? " error" : "");
-  setTimeout(() => { toastEl.className = "toast"; }, 2200);
-}
-
-// ── Event listeners ───────────────────────────────────────────────────
-generateBtn.addEventListener("click", generate);
-clearBtn.addEventListener("click", clearAll);
-copyBtn.addEventListener("click", copyOutput);
-exportBtn.addEventListener("click", exportPrompt);
-scoreBtn.addEventListener("click", scoreOutput);
-settingsToggle.addEventListener("click", toggleSettings);
-saveSettingsBtn.addEventListener("click", saveSettings);
-
-input.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.key === "Enter") generate();
-});
-
-// ── Settings ───────────────────────────────────────────────────────────
-function toggleSettings() {
-  settingsPanel.classList.toggle("visible");
-}
-
-async function loadSettings() {
-  try {
-    const res = await fetch(`${API_BASE}/settings`);
-    const data = await res.json();
-
-    modelInput.placeholder = data.hf_model_id || "meta-llama/Meta-Llama-3-8B-Instruct";
-
-    if (data.hf_api_token_set) {
-      tokenStatusEl.innerHTML = '<span class="dot on"></span> Token: ' + data.hf_api_token_masked;
-    } else {
-      tokenStatusEl.innerHTML = '<span class="dot off"></span> No token — paste your HuggingFace token above';
-      settingsPanel.classList.add("visible"); // auto-open if no token
+    try {
+      const r = await fetch(`${API}/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hf_api_token: token }),
+      });
+      if (!r.ok) throw new Error("Server error");
+      showToast("Token saved — connected!");
+      showScreen("main");
+      loadTemplates();
+    } catch (e) {
+      setupError.textContent = "Failed to save token. Is the backend running?";
+    } finally {
+      setupSave.disabled = false;
+      setupSave.textContent = "Connect & Start";
     }
-  } catch {
-    tokenStatusEl.innerHTML = '<span class="dot off"></span> Cannot reach backend';
-  }
-}
-
-async function saveSettings() {
-  const token = tokenInput.value.trim();
-  const model = modelInput.value.trim();
-
-  if (!token && !model) {
-    showToast("Enter a token or model.", true);
-    return;
   }
 
-  try {
-    const body = {};
-    if (token) body.hf_api_token = token;
-    if (model) body.hf_model_id = model;
-
-    const res = await fetch(`${API_BASE}/settings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) throw new Error("Save failed");
-
-    showToast("Settings saved!");
-    tokenInput.value = "";
-    await loadSettings();
-  } catch (e) {
-    showToast(e.message, true);
+  // ── Templates ──
+  async function loadTemplates() {
+    try {
+      const r = await fetch(`${API}/templates`);
+      const data = await r.json();
+      templateChips.innerHTML = "";
+      Object.keys(data.templates).forEach((key) => {
+        const chip = document.createElement("button");
+        chip.className = "chip";
+        chip.textContent = key.replace(/_/g, " ");
+        chip.onclick = () => {
+          document.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          currentTemplate = key;
+          inputEl.value = data.templates[key];
+          inputEl.focus();
+        };
+        templateChips.appendChild(chip);
+      });
+    } catch { /* silent */ }
   }
-}
 
-// ── Init ──────────────────────────────────────────────────────────────
-checkHealth();
-loadTemplates();
-loadSettings();
+  // ── Generate ──
+  async function generate() {
+    const text = inputEl.value.trim();
+    if (!text) { showToast("Enter a prompt first", true); return; }
+
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<span class="spinner"></span>Generating…';
+    outputEl.value = "";
+    scoreSection.classList.remove("visible");
+
+    try {
+      const body = { prompt: text };
+      if (currentTemplate) body.template = currentTemplate;
+      const r = await fetch(`${API}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || "Error");
+      outputEl.value = data.structured_prompt;
+    } catch (e) {
+      showToast(e.message || "Generation failed", true);
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.textContent = "Generate";
+    }
+  }
+
+  // ── Copy ──
+  async function copyOutput() {
+    const text = outputEl.value;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Copied!");
+    } catch {
+      showToast("Copy failed", true);
+    }
+  }
+
+  // ── Export ──
+  function exportOutput() {
+    const text = outputEl.value;
+    if (!text) return;
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "optimized_prompt.txt"; a.click();
+    URL.revokeObjectURL(url);
+    showToast("Exported!");
+  }
+
+  // ── Score ──
+  async function scorePrompt() {
+    const text = outputEl.value;
+    if (!text) { showToast("Generate first", true); return; }
+    try {
+      const r = await fetch(`${API}/score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: text }),
+      });
+      const data = await r.json();
+      const s = data.score ?? 0;
+      scoreSection.classList.add("visible");
+      scoreFill.style.width = s + "%";
+      scoreFill.style.background = s >= 70 ? "#22c55e" : s >= 40 ? "#eab308" : "#ef4444";
+      scoreValue.textContent = s;
+    } catch {
+      showToast("Scoring failed", true);
+    }
+  }
+
+  // ── Event listeners ──
+  setupSave.addEventListener("click", saveToken);
+  setupToken.addEventListener("keydown", (e) => { if (e.key === "Enter") saveToken(); });
+  changeTokenBtn.addEventListener("click", () => {
+    setupToken.value = "";
+    setupError.textContent = "";
+    showScreen("setup");
+  });
+  generateBtn.addEventListener("click", generate);
+  clearBtn.addEventListener("click", () => { inputEl.value = ""; outputEl.value = ""; scoreSection.classList.remove("visible"); });
+  copyBtn.addEventListener("click", copyOutput);
+  exportBtn.addEventListener("click", exportOutput);
+  scoreBtn.addEventListener("click", scorePrompt);
+  inputEl.addEventListener("keydown", (e) => { if (e.ctrlKey && e.key === "Enter") generate(); });
+
+  // Health poll
+  setInterval(checkHealth, 15000);
+
+  // Go!
+  init();
+})();

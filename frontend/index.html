@@ -32,503 +32,280 @@
       align-items: center;
     }
 
-    /* ── Header ───────────────────────────────────────────────── */
+    /* ── Screens ──────────────────────────────────────────────── */
+    .screen { display: none; width: 100%; }
+    .screen.active { display: flex; flex-direction: column; align-items: center; flex: 1; }
+
+    /* ── Header (shared) ──────────────────────────────────────── */
     header {
       width: 100%;
       padding: 1.5rem 2rem;
       text-align: center;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
+      position: relative;
     }
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
+    header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
     header h1 span { color: var(--accent); }
     header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+    .key-btn {
+      position: absolute; top: 1.5rem; right: 2rem;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 0.4rem 0.7rem;
+      border-radius: var(--radius); font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .key-btn:hover { border-color: var(--accent); color: var(--accent-h); }
+
+    /* ── Setup Screen ─────────────────────────────────────────── */
+    .setup-wrapper {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 2rem;
+    }
+    .setup-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2.5rem 2rem;
+      text-align: center; max-width: 460px; width: 100%;
+    }
+    .setup-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .setup-box h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .setup-box .subtitle {
+      font-size: 0.88rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.7;
+    }
+    .setup-box input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.75rem 1rem; color: var(--text);
+      font-family: var(--font); font-size: 0.9rem; outline: none;
+      text-align: center; transition: border-color 0.2s;
+    }
+    .setup-box input:focus { border-color: var(--accent); }
+    .setup-box input::placeholder { color: var(--muted); }
+    .setup-error {
+      font-size: 0.8rem; color: var(--red); margin-top: 0.6rem; min-height: 1.2rem;
+    }
+    .setup-box .cta-btn {
+      margin-top: 1.2rem; width: 100%; padding: 0.75rem;
+      border: none; border-radius: var(--radius);
+      background: var(--accent); color: #fff;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      font-family: var(--font); transition: background 0.2s;
+    }
+    .setup-box .cta-btn:hover { background: var(--accent-h); }
+    .setup-box .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .setup-box .help {
+      display: block; margin-top: 1.2rem; font-size: 0.78rem; color: var(--muted);
+    }
+    .setup-box .help a { color: var(--accent-h); text-decoration: none; }
+    .setup-box .help a:hover { text-decoration: underline; }
 
     /* ── Main layout ──────────────────────────────────────────── */
     main {
-      width: 100%;
-      max-width: 960px;
+      width: 100%; max-width: 960px;
       padding: 2rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+      display: flex; flex-direction: column; gap: 1.5rem;
       flex: 1;
     }
 
     /* Card wrapper */
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem;
     }
     .card h2 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.5rem;
     }
     .card h2 .icon { font-size: 1.1rem; }
 
     /* ── Template chips ───────────────────────────────────────── */
-    .templates {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-bottom: 1rem;
-    }
+    .templates { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1rem; }
     .chip {
-      padding: 0.35rem 0.85rem;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: all 0.2s;
+      padding: 0.35rem 0.85rem; border-radius: 20px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
     }
     .chip:hover, .chip.active {
-      border-color: var(--accent);
-      color: var(--accent-h);
+      border-color: var(--accent); color: var(--accent-h);
       background: rgba(99,102,241,0.08);
     }
 
     /* ── Textareas ────────────────────────────────────────────── */
     textarea {
-      width: 100%;
-      min-height: 140px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.85rem;
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 0.88rem;
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
+      width: 100%; min-height: 140px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.85rem; color: var(--text); font-family: var(--font);
+      font-size: 0.88rem; resize: vertical; outline: none; transition: border-color 0.2s;
     }
     textarea:focus { border-color: var(--accent); }
     textarea::placeholder { color: var(--muted); }
-
-    #output {
-      min-height: 200px;
-      white-space: pre-wrap;
-    }
+    #output { min-height: 200px; white-space: pre-wrap; }
 
     /* ── Buttons ──────────────────────────────────────────────── */
-    .btn-row {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-top: 0.8rem;
-    }
+    .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
     button {
-      padding: 0.55rem 1.3rem;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
+      padding: 0.55rem 1.3rem; border: none; border-radius: var(--radius);
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
+    .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover { background: var(--accent-h); }
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .btn-secondary {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover {
-      border-color: var(--accent);
-      color: var(--accent-h);
-    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent-h); }
 
     /* ── Score bar ────────────────────────────────────────────── */
-    .score-section {
-      display: none;
-      margin-top: 1rem;
-    }
+    .score-section { display: none; margin-top: 1rem; }
     .score-section.visible { display: block; }
     .score-bar-track {
-      height: 8px;
-      background: var(--bg);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 0.5rem;
+      height: 8px; background: var(--bg); border-radius: 4px;
+      overflow: hidden; margin-top: 0.5rem;
     }
-    .score-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.6s ease;
-    }
-    .score-label {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-top: 0.4rem;
-    }
+    .score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .score-label { font-size: 0.82rem; color: var(--muted); margin-top: 0.4rem; }
     .score-label strong { color: var(--text); font-size: 1rem; }
 
     /* ── Spinner ──────────────────────────────────────────────── */
     .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+      vertical-align: middle; margin-right: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Toast ────────────────────────────────────────────────── */
     .toast {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      padding: 0.65rem 1.2rem;
-      border-radius: var(--radius);
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: #fff;
-      background: var(--green);
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s;
-      pointer-events: none;
-      z-index: 100;
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      padding: 0.65rem 1.2rem; border-radius: var(--radius);
+      font-size: 0.82rem; font-weight: 500; color: #fff;
+      background: var(--green); opacity: 0; transform: translateY(10px);
+      transition: all 0.3s; pointer-events: none; z-index: 100;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .toast.show { opacity: 1; transform: translateY(0); }
     .toast.error { background: var(--red); }
 
     /* ── Footer ───────────────────────────────────────────────── */
     footer {
-      width: 100%;
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.75rem;
-      color: var(--muted);
+      width: 100%; text-align: center; padding: 1rem;
+      font-size: 0.75rem; color: var(--muted);
       border-top: 1px solid var(--border);
     }
-
-    /* ── Settings panel ───────────────────────────────────────── */
-    .settings-toggle {
-      position: absolute;
-      top: 1.5rem;
-      right: 2rem;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.4rem 0.7rem;
-      border-radius: var(--radius);
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .settings-toggle:hover { border-color: var(--accent); color: var(--accent-h); }
-    header { position: relative; }
-
-    .settings-card { display: none; }
-    .settings-card.visible { display: block; }
-
-    .settings-row {
-      display: flex;
-      gap: 0.6rem;
-      align-items: flex-end;
-      margin-bottom: 0.75rem;
-    }
-    .settings-row .field { flex: 1; }
-    .settings-row label {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 0.3rem;
-      font-weight: 600;
-    }
-    .settings-row input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.5rem 0.7rem;
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 0.85rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .settings-row input:focus { border-color: var(--accent); }
-    .settings-row input::placeholder { color: var(--muted); }
-
-    .token-status {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-top: 0.2rem;
-    }
-    .token-status .dot {
-      display: inline-block;
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      margin-right: 4px;
-      vertical-align: middle;
-    }
-    .token-status .dot.on  { background: var(--green); }
-    .token-status .dot.off { background: var(--red); }
 
     /* ── Responsive ───────────────────────────────────────────── */
     @media (max-width: 600px) {
       main { padding: 1rem; }
       header h1 { font-size: 1.3rem; }
+      .setup-box { padding: 1.5rem 1.2rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <h1>⚡ Prompt <span>Maker</span></h1>
-    <p>Transform messy instructions into optimized LLM prompts</p>
-    <button class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</button>
-  </header>
-
-  <!-- Main content -->
-  <main>
-
-    <!-- Settings card (hidden by default) -->
-    <div class="card settings-card" id="settingsCard">
-      <h2><span class="icon">⚙️</span> Settings</h2>
-      <div class="settings-row">
-        <div class="field">
-          <label>HuggingFace API Token</label>
-          <input type="password" id="tokenInput" placeholder="hf_xxxxxxxxxxxxxxxxx" />
-        </div>
-        <button class="btn-primary" style="height:36px; margin-bottom:1px;" onclick="saveSettings()">Save</button>
-      </div>
-      <div class="settings-row">
-        <div class="field">
-          <label>Model ID <span style="font-weight:400; color:var(--muted)">(optional)</span></label>
-          <input type="text" id="modelInput" placeholder="meta-llama/Meta-Llama-3-8B-Instruct" />
-        </div>
-      </div>
-      <div class="token-status" id="tokenStatus"></div>
-    </div>
-
-    <!-- Input card -->
-    <div class="card">
-      <h2><span class="icon">📝</span> Your Prompt</h2>
-
-      <!-- Template chips -->
-      <div class="templates" id="templateChips"></div>
-
-      <textarea
-        id="input"
-        placeholder="Type your messy prompt here… e.g. &quot;explain this research paper simply and tell me the important parts&quot;"
-      ></textarea>
-
-      <div class="btn-row">
-        <button class="btn-primary" id="generateBtn" onclick="generate()">
-          Generate Structured Prompt
-        </button>
-        <button class="btn-secondary" onclick="clearAll()">Clear</button>
-      </div>
-    </div>
-
-    <!-- Output card -->
-    <div class="card">
-      <h2><span class="icon">✨</span> Optimized Prompt</h2>
-      <textarea id="output" readonly placeholder="Your optimized prompt will appear here…"></textarea>
-
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="copyOutput()">📋 Copy</button>
-        <button class="btn-secondary" onclick="exportPrompt()">💾 Export .txt</button>
-        <button class="btn-secondary" onclick="scoreOutput()">📊 Score Prompt</button>
-      </div>
-
-      <!-- Score display -->
-      <div class="score-section" id="scoreSection">
-        <div class="score-bar-track">
-          <div class="score-bar-fill" id="scoreFill"></div>
-        </div>
-        <p class="score-label">
-          Prompt Quality: <strong id="scoreValue">—</strong> / 100
+  <!-- ══════════ SCREEN 1: Setup ══════════ -->
+  <div class="screen" id="setupScreen">
+    <header>
+      <h1>⚡ Prompt <span>Maker</span></h1>
+      <p>Transform messy instructions into optimized LLM prompts</p>
+    </header>
+    <div class="setup-wrapper">
+      <div class="setup-box">
+        <div class="setup-icon">🔑</div>
+        <h2>Welcome to Prompt Maker</h2>
+        <p class="subtitle">
+          Paste your HuggingFace API token to get started.<br>
+          This powers the AI that optimizes your prompts.
         </p>
+        <input type="password" id="setupTokenInput"
+               placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxx" spellcheck="false" />
+        <div class="setup-error" id="setupError"></div>
+        <button class="cta-btn" id="setupSaveBtn">Connect & Start</button>
+        <span class="help">
+          Get a free token at
+          <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a>
+        </span>
       </div>
     </div>
+    <footer>Prompt Maker v1.0 — Powered by HuggingFace Inference API</footer>
+  </div>
 
-  </main>
+  <!-- ══════════ SCREEN 2: Main App ══════════ -->
+  <div class="screen" id="mainScreen">
+    <header>
+      <h1>⚡ Prompt <span>Maker</span></h1>
+      <p>Transform messy instructions into optimized LLM prompts</p>
+      <button class="key-btn" id="changeTokenBtn" title="Change API token">🔑 Token</button>
+    </header>
 
-  <footer>
-    Prompt Maker v1.0 — Powered by HuggingFace Inference API
-  </footer>
+    <main>
+      <!-- Input card -->
+      <div class="card">
+        <h2><span class="icon">📝</span> Your Prompt</h2>
+        <div class="templates" id="templateChips"></div>
+        <textarea
+          id="input"
+          placeholder="Type your messy prompt here… e.g. &quot;explain this research paper simply and tell me the important parts&quot;"
+        ></textarea>
+        <div class="btn-row">
+          <button class="btn-primary" id="generateBtn">Generate Structured Prompt</button>
+          <button class="btn-secondary" id="clearBtn">Clear</button>
+        </div>
+      </div>
+
+      <!-- Output card -->
+      <div class="card">
+        <h2><span class="icon">✨</span> Optimized Prompt</h2>
+        <textarea id="output" readonly placeholder="Your optimized prompt will appear here…"></textarea>
+        <div class="btn-row">
+          <button class="btn-secondary" id="copyBtn">📋 Copy</button>
+          <button class="btn-secondary" id="exportBtn">💾 Export .txt</button>
+          <button class="btn-secondary" id="scoreBtn">📊 Score Prompt</button>
+        </div>
+        <div class="score-section" id="scoreSection">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" id="scoreFill"></div>
+          </div>
+          <p class="score-label">Prompt Quality: <strong id="scoreValue">—</strong> / 100</p>
+        </div>
+      </div>
+    </main>
+
+    <footer>Prompt Maker v1.0 — Powered by HuggingFace Inference API</footer>
+  </div>
 
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
   <script>
     // ── Configuration ───────────────────────────────────────────
-    const API_BASE = window.location.origin;   // same origin as FastAPI
+    const API_BASE = window.location.origin;
 
-    // ── State ───────────────────────────────────────────────────
+    // ── DOM refs ────────────────────────────────────────────────
+    const setupScreen    = document.getElementById('setupScreen');
+    const mainScreen     = document.getElementById('mainScreen');
+    const setupTokenIn   = document.getElementById('setupTokenInput');
+    const setupSaveBtn   = document.getElementById('setupSaveBtn');
+    const setupError     = document.getElementById('setupError');
+    const changeTokenBtn = document.getElementById('changeTokenBtn');
+    const inputEl        = document.getElementById('input');
+    const outputEl       = document.getElementById('output');
+    const generateBtn    = document.getElementById('generateBtn');
+    const clearBtn       = document.getElementById('clearBtn');
+    const copyBtn        = document.getElementById('copyBtn');
+    const exportBtn      = document.getElementById('exportBtn');
+    const scoreBtn       = document.getElementById('scoreBtn');
+    const scoreSection   = document.getElementById('scoreSection');
+    const scoreFill      = document.getElementById('scoreFill');
+    const scoreValue     = document.getElementById('scoreValue');
+    const templateChips  = document.getElementById('templateChips');
+
     let selectedTemplate = null;
 
-    // ── Load templates ──────────────────────────────────────────
-    async function loadTemplates() {
-      try {
-        const res = await fetch(`${API_BASE}/templates`);
-        const data = await res.json();
-        const container = document.getElementById('templateChips');
-        for (const [key, desc] of Object.entries(data.templates)) {
-          const chip = document.createElement('button');
-          chip.className = 'chip';
-          chip.textContent = key.replace('_', ' ');
-          chip.title = desc;
-          chip.onclick = () => toggleTemplate(chip, key);
-          container.appendChild(chip);
-        }
-      } catch { /* templates are optional; silently ignore */ }
+    // ── Screen navigation ───────────────────────────────────────
+    function showScreen(name) {
+      setupScreen.classList.toggle('active', name === 'setup');
+      mainScreen.classList.toggle('active', name === 'main');
     }
 
-    function toggleTemplate(chip, key) {
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      if (selectedTemplate === key) {
-        selectedTemplate = null;
-      } else {
-        selectedTemplate = key;
-        chip.classList.add('active');
-      }
-    }
-
-    // ── Generate ────────────────────────────────────────────────
-    async function generate() {
-      const input = document.getElementById('input').value.trim();
-      if (!input) { showToast('Please enter a prompt first.', true); return; }
-
-      const btn = document.getElementById('generateBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>Generating…';
-
-      // Hide previous score
-      document.getElementById('scoreSection').classList.remove('visible');
-
-      try {
-        const body = { prompt: input };
-        if (selectedTemplate) body.template = selectedTemplate;
-
-        const res = await fetch(`${API_BASE}/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || `Server error ${res.status}`);
-        }
-
-        const data = await res.json();
-        document.getElementById('output').value = data.structured_prompt;
-        showToast('Prompt generated successfully!');
-      } catch (e) {
-        showToast(e.message, true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Generate Structured Prompt';
-      }
-    }
-
-    // ── Copy ────────────────────────────────────────────────────
-    async function copyOutput() {
-      const text = document.getElementById('output').value;
-      if (!text) { showToast('Nothing to copy.', true); return; }
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast('Copied to clipboard!');
-      } catch {
-        // Fallback
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('Copied to clipboard!');
-      }
-    }
-
-    // ── Export ───────────────────────────────────────────────────
-    function exportPrompt() {
-      const text = document.getElementById('output').value;
-      if (!text) { showToast('Nothing to export.', true); return; }
-      const blob = new Blob([text], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'optimized_prompt.txt';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Prompt exported!');
-    }
-
-    // ── Score ───────────────────────────────────────────────────
-    async function scoreOutput() {
-      const text = document.getElementById('output').value;
-      if (!text) { showToast('Generate a prompt first.', true); return; }
-
-      try {
-        const res = await fetch(`${API_BASE}/score`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: text }),
-        });
-        const data = await res.json();
-
-        const section = document.getElementById('scoreSection');
-        const fill = document.getElementById('scoreFill');
-        const value = document.getElementById('scoreValue');
-
-        const score = data.score;
-        value.textContent = score;
-        fill.style.width = score + '%';
-
-        // Color based on score
-        if (score >= 70) fill.style.background = 'var(--green)';
-        else if (score >= 40) fill.style.background = '#eab308';
-        else fill.style.background = 'var(--red)';
-
-        section.classList.add('visible');
-      } catch {
-        showToast('Failed to score prompt.', true);
-      }
-    }
-
-    // ── Clear ───────────────────────────────────────────────────
-    function clearAll() {
-      document.getElementById('input').value = '';
-      document.getElementById('output').value = '';
-      document.getElementById('scoreSection').classList.remove('visible');
-      selectedTemplate = null;
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    }
-
-    // ── Toast helper ────────────────────────────────────────────
+    // ── Toast ───────────────────────────────────────────────────
     function showToast(msg, isError = false) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -536,71 +313,180 @@
       setTimeout(() => { t.className = 'toast'; }, 2500);
     }
 
-    // ── Allow Ctrl+Enter to generate ────────────────────────────
-    document.getElementById('input').addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.key === 'Enter') generate();
-    });
-
-    // ── Settings ────────────────────────────────────────────────
-    function toggleSettings() {
-      document.getElementById('settingsCard').classList.toggle('visible');
-    }
-
-    async function loadSettings() {
+    // ── Init: decide which screen to show ───────────────────────
+    async function init() {
       try {
         const res = await fetch(`${API_BASE}/settings`);
         const data = await res.json();
-        const status = document.getElementById('tokenStatus');
-        const modelInput = document.getElementById('modelInput');
-
-        modelInput.placeholder = data.hf_model_id || 'meta-llama/Meta-Llama-3-8B-Instruct';
-
         if (data.hf_api_token_set) {
-          status.innerHTML = '<span class="dot on"></span> Token configured: ' + data.hf_api_token_masked;
+          showScreen('main');
+          loadTemplates();
         } else {
-          status.innerHTML = '<span class="dot off"></span> No token set — paste your HuggingFace token above to get started';
-          // Auto-show settings if no token is set
-          document.getElementById('settingsCard').classList.add('visible');
+          showScreen('setup');
         }
       } catch {
-        document.getElementById('tokenStatus').innerHTML =
-          '<span class="dot off"></span> Cannot reach backend';
+        showScreen('setup');
+        setupError.textContent = 'Cannot reach backend — make sure the server is running.';
       }
     }
 
-    async function saveSettings() {
-      const token = document.getElementById('tokenInput').value.trim();
-      const model = document.getElementById('modelInput').value.trim();
+    // ── Save token (setup screen) ───────────────────────────────
+    async function saveToken() {
+      const token = setupTokenIn.value.trim();
+      if (!token) { setupError.textContent = 'Please paste your HuggingFace token.'; return; }
+      if (!token.startsWith('hf_')) { setupError.textContent = 'Token should start with hf_'; return; }
 
-      if (!token && !model) {
-        showToast('Enter a token or model ID.', true);
-        return;
-      }
+      setupError.textContent = '';
+      setupSaveBtn.disabled = true;
+      setupSaveBtn.innerHTML = '<span class="spinner"></span>Connecting…';
 
       try {
-        const body = {};
-        if (token) body.hf_api_token = token;
-        if (model) body.hf_model_id = model;
-
         const res = await fetch(`${API_BASE}/settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hf_api_token: token }),
+        });
+        if (!res.ok) throw new Error('Server error');
+        showToast('Token saved — connected!');
+        showScreen('main');
+        loadTemplates();
+      } catch {
+        setupError.textContent = 'Failed to save token. Is the backend running?';
+      } finally {
+        setupSaveBtn.disabled = false;
+        setupSaveBtn.textContent = 'Connect & Start';
+      }
+    }
+
+    // ── Load templates ──────────────────────────────────────────
+    async function loadTemplates() {
+      try {
+        const res = await fetch(`${API_BASE}/templates`);
+        const data = await res.json();
+        templateChips.innerHTML = '';
+        for (const [key, desc] of Object.entries(data.templates)) {
+          const chip = document.createElement('button');
+          chip.className = 'chip';
+          chip.textContent = key.replace(/_/g, ' ');
+          chip.title = desc;
+          chip.onclick = () => {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if (selectedTemplate === key) { selectedTemplate = null; }
+            else { selectedTemplate = key; chip.classList.add('active'); }
+          };
+          templateChips.appendChild(chip);
+        }
+      } catch { /* templates are optional */ }
+    }
+
+    // ── Generate ────────────────────────────────────────────────
+    async function generate() {
+      const text = inputEl.value.trim();
+      if (!text) { showToast('Please enter a prompt first.', true); return; }
+
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="spinner"></span>Generating…';
+      scoreSection.classList.remove('visible');
+
+      try {
+        const body = { prompt: text };
+        if (selectedTemplate) body.template = selectedTemplate;
+
+        const res = await fetch(`${API_BASE}/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-
-        if (!res.ok) throw new Error('Failed to save settings');
-
-        showToast('Settings saved!');
-        document.getElementById('tokenInput').value = '';
-        await loadSettings();
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server error ${res.status}`);
+        }
+        const data = await res.json();
+        outputEl.value = data.structured_prompt;
+        showToast('Prompt generated successfully!');
       } catch (e) {
         showToast(e.message, true);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Structured Prompt';
       }
     }
 
+    // ── Copy ────────────────────────────────────────────────────
+    async function copyOutput() {
+      const text = outputEl.value;
+      if (!text) { showToast('Nothing to copy.', true); return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Copied to clipboard!');
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied to clipboard!');
+      }
+    }
+
+    // ── Export ───────────────────────────────────────────────────
+    function exportPrompt() {
+      const text = outputEl.value;
+      if (!text) { showToast('Nothing to export.', true); return; }
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'optimized_prompt.txt'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Prompt exported!');
+    }
+
+    // ── Score ───────────────────────────────────────────────────
+    async function scoreOutput() {
+      const text = outputEl.value;
+      if (!text) { showToast('Generate a prompt first.', true); return; }
+      try {
+        const res = await fetch(`${API_BASE}/score`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text }),
+        });
+        const data = await res.json();
+        const s = data.score;
+        scoreValue.textContent = s;
+        scoreFill.style.width = s + '%';
+        scoreFill.style.background = s >= 70 ? 'var(--green)' : s >= 40 ? '#eab308' : 'var(--red)';
+        scoreSection.classList.add('visible');
+      } catch {
+        showToast('Failed to score prompt.', true);
+      }
+    }
+
+    // ── Clear ───────────────────────────────────────────────────
+    function clearAll() {
+      inputEl.value = '';
+      outputEl.value = '';
+      scoreSection.classList.remove('visible');
+      selectedTemplate = null;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    }
+
+    // ── Event listeners ─────────────────────────────────────────
+    setupSaveBtn.addEventListener('click', saveToken);
+    setupTokenIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveToken(); });
+    changeTokenBtn.addEventListener('click', () => {
+      setupTokenIn.value = '';
+      setupError.textContent = '';
+      showScreen('setup');
+    });
+    generateBtn.addEventListener('click', generate);
+    clearBtn.addEventListener('click', clearAll);
+    copyBtn.addEventListener('click', copyOutput);
+    exportBtn.addEventListener('click', exportPrompt);
+    scoreBtn.addEventListener('click', scoreOutput);
+    inputEl.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'Enter') generate(); });
+
     // ── Init ────────────────────────────────────────────────────
-    loadTemplates();
-    loadSettings();
+    init();
   </script>
 </body>
 </html>
