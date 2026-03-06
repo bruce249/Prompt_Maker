@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from backend.config import CORS_ORIGINS
+from backend.config import CORS_ORIGINS, runtime_settings
 from backend.prompt_engine import (
     PROMPT_TEMPLATES,
     generate_structured_prompt,
@@ -112,6 +112,37 @@ async def score(req: ScoreRequest):
 async def templates():
     """Return the available prompt template categories."""
     return {"templates": PROMPT_TEMPLATES}
+
+
+# ── Settings ──────────────────────────────────────────────────────────
+
+class SettingsRequest(BaseModel):
+    hf_api_token: str | None = Field(None, description="HuggingFace API token")
+    hf_model_id: str | None = Field(None, description="HuggingFace model ID")
+
+
+@app.get("/settings")
+async def get_settings():
+    """Return current settings (token is masked)."""
+    token = runtime_settings["hf_api_token"]
+    masked = ""
+    if token:
+        masked = token[:5] + "*" * (len(token) - 9) + token[-4:] if len(token) > 9 else "****"
+    return {
+        "hf_api_token_set": bool(token),
+        "hf_api_token_masked": masked,
+        "hf_model_id": runtime_settings["hf_model_id"],
+    }
+
+
+@app.post("/settings")
+async def update_settings(req: SettingsRequest):
+    """Update runtime settings (token, model) without restarting."""
+    if req.hf_api_token is not None:
+        runtime_settings["hf_api_token"] = req.hf_api_token.strip()
+    if req.hf_model_id is not None:
+        runtime_settings["hf_model_id"] = req.hf_model_id.strip()
+    return {"status": "ok", "message": "Settings updated."}
 
 
 # ── Standalone runner ─────────────────────────────────────────────────

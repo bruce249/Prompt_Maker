@@ -19,6 +19,14 @@ HF_MODEL_ID: str = os.getenv(
 )
 HF_API_URL: str = "https://router.huggingface.co/v1/chat/completions"
 
+# Mutable runtime settings — can be updated via the /settings endpoint
+# or the UI settings panel without restarting the server.
+runtime_settings: dict = {
+    "hf_api_token": HF_API_TOKEN,
+    "hf_model_id": HF_MODEL_ID,
+    "hf_api_url": HF_API_URL,
+}
+
 # ── Server settings ───────────────────────────────────────────────────
 HOST: str = os.getenv("HOST", "127.0.0.1")
 PORT: int = int(os.getenv("PORT", "8000"))

@@ -229,6 +229,70 @@
       border-top: 1px solid var(--border);
     }
 
+    /* ── Settings panel ───────────────────────────────────────── */
+    .settings-toggle {
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 0.7rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .settings-toggle:hover { border-color: var(--accent); color: var(--accent-h); }
+    header { position: relative; }
+
+    .settings-card { display: none; }
+    .settings-card.visible { display: block; }
+
+    .settings-row {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-end;
+      margin-bottom: 0.75rem;
+    }
+    .settings-row .field { flex: 1; }
+    .settings-row label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+    .settings-row input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .settings-row input:focus { border-color: var(--accent); }
+    .settings-row input::placeholder { color: var(--muted); }
+
+    .token-status {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .token-status .dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .token-status .dot.on  { background: var(--green); }
+    .token-status .dot.off { background: var(--red); }
+
     /* ── Responsive ───────────────────────────────────────────── */
     @media (max-width: 600px) {
       main { padding: 1rem; }
@@ -242,10 +306,30 @@
   <header>
     <h1>⚡ Prompt <span>Maker</span></h1>
     <p>Transform messy instructions into optimized LLM prompts</p>
+    <button class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</button>
   </header>
 
   <!-- Main content -->
   <main>
+
+    <!-- Settings card (hidden by default) -->
+    <div class="card settings-card" id="settingsCard">
+      <h2><span class="icon">⚙️</span> Settings</h2>
+      <div class="settings-row">
+        <div class="field">
+          <label>HuggingFace API Token</label>
+          <input type="password" id="tokenInput" placeholder="hf_xxxxxxxxxxxxxxxxx" />
+        </div>
+        <button class="btn-primary" style="height:36px; margin-bottom:1px;" onclick="saveSettings()">Save</button>
+      </div>
+      <div class="settings-row">
+        <div class="field">
+          <label>Model ID <span style="font-weight:400; color:var(--muted)">(optional)</span></label>
+          <input type="text" id="modelInput" placeholder="meta-llama/Meta-Llama-3-8B-Instruct" />
+        </div>
+      </div>
+      <div class="token-status" id="tokenStatus"></div>
+    </div>
 
     <!-- Input card -->
     <div class="card">
@@ -457,8 +541,66 @@
       if (e.ctrlKey && e.key === 'Enter') generate();
     });
 
+    // ── Settings ────────────────────────────────────────────────
+    function toggleSettings() {
+      document.getElementById('settingsCard').classList.toggle('visible');
+    }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_BASE}/settings`);
+        const data = await res.json();
+        const status = document.getElementById('tokenStatus');
+        const modelInput = document.getElementById('modelInput');
+
+        modelInput.placeholder = data.hf_model_id || 'meta-llama/Meta-Llama-3-8B-Instruct';
+
+        if (data.hf_api_token_set) {
+          status.innerHTML = '<span class="dot on"></span> Token configured: ' + data.hf_api_token_masked;
+        } else {
+          status.innerHTML = '<span class="dot off"></span> No token set — paste your HuggingFace token above to get started';
+          // Auto-show settings if no token is set
+          document.getElementById('settingsCard').classList.add('visible');
+        }
+      } catch {
+        document.getElementById('tokenStatus').innerHTML =
+          '<span class="dot off"></span> Cannot reach backend';
+      }
+    }
+
+    async function saveSettings() {
+      const token = document.getElementById('tokenInput').value.trim();
+      const model = document.getElementById('modelInput').value.trim();
+
+      if (!token && !model) {
+        showToast('Enter a token or model ID.', true);
+        return;
+      }
+
+      try {
+        const body = {};
+        if (token) body.hf_api_token = token;
+        if (model) body.hf_model_id = model;
+
+        const res = await fetch(`${API_BASE}/settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) throw new Error('Failed to save settings');
+
+        showToast('Settings saved!');
+        document.getElementById('tokenInput').value = '';
+        await loadSettings();
+      } catch (e) {
+        showToast(e.message, true);
+      }
+    }
+
     // ── Init ────────────────────────────────────────────────────
     loadTemplates();
+    loadSettings();
   </script>
 </body>
 </html>

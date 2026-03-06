@@ -220,7 +220,54 @@
       display: inline-block;
     }
     .status-dot.online { background: var(--green); }
-  </style>
+    /* ── Settings panel ─────────────────────────────────────────── */
+    .settings-panel { display: none; }
+    .settings-panel.visible { display: block; }
+    .settings-panel .field { margin-bottom: 8px; }
+    .settings-panel label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .settings-panel input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 8px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 11px;
+      outline: none;
+    }
+    .settings-panel input:focus { border-color: var(--accent); }
+    .settings-panel input::placeholder { color: var(--muted); }
+    .token-status {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .token-status .dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      margin-right: 3px;
+      vertical-align: middle;
+    }
+    .token-status .dot.on  { background: var(--green); }
+    .token-status .dot.off { background: var(--red); }
+    .settings-gear {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px;
+      transition: color 0.15s;
+    }
+    .settings-gear:hover { color: var(--accent-h); }  </style>
 </head>
 <body>
 
@@ -228,7 +275,8 @@
   <div class="header">
     <h1>⚡ Prompt <span>Maker</span></h1>
     <span class="badge">Extension</span>
-    <span style="margin-left:auto; display:flex; align-items:center; gap:4px;">
+    <span style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+      <button class="settings-gear" id="settingsToggleBtn" title="Settings">⚙️</button>
       <span class="status-dot" id="statusDot"></span>
       <span style="font-size:9px; color:var(--muted)" id="statusText">offline</span>
     </span>
@@ -236,6 +284,25 @@
 
   <!-- Content -->
   <div class="content">
+
+    <!-- Settings panel (hidden by default) -->
+    <div class="settings-panel" id="settingsPanel">
+      <div class="divider"></div>
+      <div class="label">⚙️ Settings</div>
+      <div class="field">
+        <label>HuggingFace API Token</label>
+        <input type="password" id="tokenInput" placeholder="hf_xxxxxxxxxxxxxxxxx" />
+      </div>
+      <div class="field">
+        <label>Model ID <span style="font-weight:400">(optional)</span></label>
+        <input type="text" id="modelInput" placeholder="meta-llama/Meta-Llama-3-8B-Instruct" />
+      </div>
+      <div class="btn-row" style="margin-bottom:6px;">
+        <button class="btn-primary" id="saveSettingsBtn">Save</button>
+      </div>
+      <div class="token-status" id="tokenStatus"></div>
+      <div class="divider"></div>
+    </div>
 
     <!-- Template chips -->
     <div class="templates" id="templateChips"></div>

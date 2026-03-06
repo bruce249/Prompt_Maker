@@ -26,6 +26,12 @@ const chipsBox    = document.getElementById("templateChips");
 const scoreSection = document.getElementById("scoreSection");
 const scoreFill   = document.getElementById("scoreFill");
 const scoreValue  = document.getElementById("scoreValue");
+const settingsPanel    = document.getElementById("settingsPanel");
+const settingsToggle   = document.getElementById("settingsToggleBtn");
+const saveSettingsBtn  = document.getElementById("saveSettingsBtn");
+const tokenInput       = document.getElementById("tokenInput");
+const modelInput       = document.getElementById("modelInput");
+const tokenStatusEl    = document.getElementById("tokenStatus");
 
 // ── Health check ──────────────────────────────────────────────────────
 async function checkHealth() {
@@ -184,11 +190,67 @@ clearBtn.addEventListener("click", clearAll);
 copyBtn.addEventListener("click", copyOutput);
 exportBtn.addEventListener("click", exportPrompt);
 scoreBtn.addEventListener("click", scoreOutput);
+settingsToggle.addEventListener("click", toggleSettings);
+saveSettingsBtn.addEventListener("click", saveSettings);
 
 input.addEventListener("keydown", (e) => {
   if (e.ctrlKey && e.key === "Enter") generate();
 });
 
+// ── Settings ───────────────────────────────────────────────────────────
+function toggleSettings() {
+  settingsPanel.classList.toggle("visible");
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch(`${API_BASE}/settings`);
+    const data = await res.json();
+
+    modelInput.placeholder = data.hf_model_id || "meta-llama/Meta-Llama-3-8B-Instruct";
+
+    if (data.hf_api_token_set) {
+      tokenStatusEl.innerHTML = '<span class="dot on"></span> Token: ' + data.hf_api_token_masked;
+    } else {
+      tokenStatusEl.innerHTML = '<span class="dot off"></span> No token — paste your HuggingFace token above';
+      settingsPanel.classList.add("visible"); // auto-open if no token
+    }
+  } catch {
+    tokenStatusEl.innerHTML = '<span class="dot off"></span> Cannot reach backend';
+  }
+}
+
+async function saveSettings() {
+  const token = tokenInput.value.trim();
+  const model = modelInput.value.trim();
+
+  if (!token && !model) {
+    showToast("Enter a token or model.", true);
+    return;
+  }
+
+  try {
+    const body = {};
+    if (token) body.hf_api_token = token;
+    if (model) body.hf_model_id = model;
+
+    const res = await fetch(`${API_BASE}/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("Save failed");
+
+    showToast("Settings saved!");
+    tokenInput.value = "";
+    await loadSettings();
+  } catch (e) {
+    showToast(e.message, true);
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────
 checkHealth();
 loadTemplates();
+loadSettings();
